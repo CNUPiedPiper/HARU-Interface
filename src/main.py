@@ -1,10 +1,14 @@
 #-*- coding: utf-8 -*- 
 import configparser
+import request, json
 from detector import hotword
 from recorder import recorders
 from speech_recognition import transcribe_streaming
 from led_controller import Led_controller
 from text2speech import text2speech
+from apibucket.music_recognizer import music_recog
+
+server_url = '192.168.0.11'
 
 # Haru main class.
 class Main:
@@ -24,10 +28,26 @@ class Main:
         self.speaker.speak(u'하루를 시작합니다..')
 
     def request_api(self, sentence):
-        return "response json object"
+        data = {'sentence': sentence}
+        headers = {'Content-Type': 'classification/json; charset=utf-8'}
+        response_body = requests.post(server_url, headers=headers, data=data)
+        return response_body
 
-    def preprocessing(self, response):
-        return "Answer text"
+    def preprocessing(self, response_body):
+        data = response_body.json()
+        function_number = int(data['function_number'])
+
+        if function_number == 4: # Recording for music recognize
+            self.speaker.speak(u'잠시 들어볼게요.')
+            host = config.get('MUSIC_RECOGNIZER', 'host')
+	        key = config.get('MUSIC_RECOGNIZER', 'key')
+	        secret = config.get('MUSIC_RECOGNIZER', 'secret')
+            answer_text = music_recog.get_music_title(host, key, secret)
+            return answer_text
+        else:
+            answer_text = data['answer']
+            
+        return answer_text
 
     def main_flow(self):
         print('[HARU] In Main flow..')
@@ -51,8 +71,8 @@ class Main:
         self.led.turn_on()
 
         # Request for classifying user's order sentence.
-        response = self.request_api(sentence)
-        answer_text = self.preprocessing(response)
+        response_body = self.request_api(sentence)
+        answer_text = self.preprocessing(response_body)
 
         # Speak the answer text using Naver TTS api.
         self.speaker.speak(answer_text)
