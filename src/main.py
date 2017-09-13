@@ -1,14 +1,14 @@
 #-*- coding: utf-8 -*- 
 import configparser
-import request, json
+import requests, json
 from detector import hotword
-from recorder import recorders
+from recorder import recorder
 from speech_recognition import transcribe_streaming
 from led_controller import Led_controller
 from text2speech import text2speech
 from apibucket.music_recognizer import music_recog
 
-server_url = '192.168.0.11'
+server_url = 'http://192.168.0.188:5000/request'
 
 # Haru main class.
 class Main:
@@ -29,19 +29,18 @@ class Main:
 
     def request_api(self, sentence):
         data = {'sentence': sentence}
-        headers = {'Content-Type': 'classification/json; charset=utf-8'}
-        response_body = requests.post(server_url, headers=headers, data=data)
+        response_body = requests.post(server_url, data=data)
         return response_body
 
     def preprocessing(self, response_body):
-        data = response_body.json()
+        data = json.loads(response_body.content)
         function_number = int(data['function_number'])
 
         if function_number == 4: # Recording for music recognize
             self.speaker.speak(u'잠시 들어볼게요.')
-            host = config.get('MUSIC_RECOGNIZER', 'host')
-	        key = config.get('MUSIC_RECOGNIZER', 'key')
-	        secret = config.get('MUSIC_RECOGNIZER', 'secret')
+            host = self.config.get('MUSIC_RECOGNIZER', 'host')
+	    key = self.config.get('MUSIC_RECOGNIZER', 'key')
+	    secret = self.config.get('MUSIC_RECOGNIZER', 'secret')
             answer_text = music_recog.get_music_title(host, key, secret)
             return answer_text
         else:
@@ -52,6 +51,7 @@ class Main:
     def main_flow(self):
         print('[HARU] In Main flow..')
         print('[HARU] Recording now.. Ask a question now') 
+        self.speaker.speak(u'말씀하세요')
         self.led.turn_on()
         
         # Record user's order sentence.
@@ -67,7 +67,7 @@ class Main:
         #sentence = u'지금 몇시야'
         #sentence = u'이 노래가 뭐지'
 
-        self.rec.close_buf()
+        #self.rec.close_buf()
         self.led.turn_on()
 
         # Request for classifying user's order sentence.
