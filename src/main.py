@@ -8,7 +8,7 @@ from led_controller import Led_controller
 from text2speech import text2speech
 from apibucket.music_recognizer import music_recog
 
-server_url = 'http://192.168.0.188:5000/request'
+server_url = 'http://192.168.1.3:5000/request'
 
 # Haru main class.
 class Main:
@@ -51,7 +51,6 @@ class Main:
     def main_flow(self):
         print('[HARU] In Main flow..')
         print('[HARU] Recording now.. Ask a question now') 
-        self.speaker.speak(u'말씀하세요')
         self.led.turn_on()
         
         # Record user's order sentence.
