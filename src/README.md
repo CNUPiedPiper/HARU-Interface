@@ -17,7 +17,8 @@ First, Set [Google Cloud Speech](https://github.com/CNUPiedPiper/HARU-Interface/
 그리고 다음과 같이 [main.py](https://github.com/CNUPiedPiper/HARU-Interface/blob/master/src/main.py) 를 실행합니다.</br>
 Then run [main.py](https://github.com/CNUPiedPiper/HARU-Interface/blob/master/src/main.py) as follows.
 ``` bash
-$ sudo python main.py
+$ sudo python main.py server_ip port_number
+$ sudo python main.py 192.168.1.3 5000
 ```
 
 ## Hardware Design
