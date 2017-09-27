@@ -1,6 +1,7 @@
 #-*- coding: utf-8 -*- 
 import configparser
 import requests, json
+import sys
 from detector import hotword
 from recorder import recorder
 from speech_recognition import transcribe_streaming
@@ -8,13 +9,13 @@ from led_controller import Led_controller
 from text2speech import text2speech
 from apibucket.music_recognizer import music_recog
 
-server_url = 'http://192.168.1.3:5000/request'
-
 # Haru main class.
 class Main:
-    def __init__(self):
+    def __init__(self, server_ip, port_number):
         self.config = configparser.RawConfigParser()
         self.config.read('config.ini')
+        self.server_url = 'http://' + server_ip + ':' + port_number + '/request'
+
         naver_id = self.config.get('NAVER', 'id')
         naver_secret = self.config.get('NAVER', 'secret')
 
@@ -29,7 +30,7 @@ class Main:
 
     def request_api(self, sentence):
         data = {'sentence': sentence}
-        response_body = requests.post(server_url, data=data)
+        response_body = requests.post(self.server_url, data=data)
         return response_body
 
     def preprocessing(self, response_body):
@@ -66,7 +67,6 @@ class Main:
         #sentence = u'지금 몇시야'
         #sentence = u'이 노래가 뭐지'
 
-        #self.rec.close_buf()
         self.led.turn_on()
 
         # Request for classifying user's order sentence.
@@ -85,6 +85,11 @@ class Main:
         self.detector.start_detection(self.main_flow)
 
 if __name__ == "__main__":
-    print('[HARU] Starting the HARU')
-    haru = Main()
+    if len(sys.argv) < 3:
+        print '$sudo python main.py server_ip port_number'
+        print '$sudo python main.py 192.168.1.3 5000'
+        exit()
+
+    print('[HARU] Starting the HARU-Interface')
+    haru = Main(sys.argv[1], sys.argv[2])
     haru.run()
