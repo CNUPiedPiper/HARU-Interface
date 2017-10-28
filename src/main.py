@@ -35,7 +35,10 @@ class Main:
 
     def preprocessing(self, response_body):
         data = json.loads(response_body.content)
-        function_number = int(data['function_number'])
+        try:
+            function_number = int(data['function_number'])
+        except:
+            return u'서버 오류 입니다. 다시 시도해주세요.'
 
         if function_number == 4: # Recording for music recognize
             self.speaker.speak(u'잠시 들어볼게요.')
@@ -92,4 +95,5 @@ if __name__ == "__main__":
 
     print('[HARU] Starting the HARU-Interface')
     haru = Main(sys.argv[1], sys.argv[2])
+    # haru = Main('127.0.0.1', 5000)
     haru.run()
